@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Motion Log</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Workout Tracker</p>
+          <h1>毎日の運動を、あとから見返したくなる記録に。</h1>
+          <p class="hero-text">
+            時間、強度、カロリー、メモをまとめて残して、習慣の積み上がりをひと目で確認できます。
+          </p>
+        </div>
+        <div class="hero-card">
+          <p class="hero-card-label">今週の目安</p>
+          <strong id="heroWeeklyMinutes">0分</strong>
+          <span>7日間の記録から自動で集計</span>
+        </div>
+      </header>
+
+      <main class="dashboard">
+        <section class="panel panel-form">
+          <div class="section-heading">
+            <h2>運動を記録</h2>
+            <p>1回ごとのトレーニング内容を追加します。</p>
+          </div>
+
+          <form id="workoutForm" class="workout-form">
+            <label>
+              日付
+              <input type="date" id="date" name="date" required />
+            </label>
+            <label>
+              種目
+              <select id="activity" name="activity" required>
+                <option value="">選択してください</option>
+                <option value="ランニング">ランニング</option>
+                <option value="ウォーキング">ウォーキング</option>
+                <option value="筋トレ">筋トレ</option>
+                <option value="ヨガ">ヨガ</option>
+                <option value="サイクリング">サイクリング</option>
+                <option value="水泳">水泳</option>
+                <option value="その他">その他</option>
+              </select>
+            </label>
+            <label>
+              時間（分）
+              <input
+                type="number"
+                id="duration"
+                name="duration"
+                min="1"
+                max="600"
+                placeholder="45"
+                required
+              />
+            </label>
+            <label>
+              消費カロリー
+              <input
+                type="number"
+                id="calories"
+                name="calories"
+                min="0"
+                max="5000"
+                placeholder="320"
+              />
+            </label>
+            <label>
+              強度
+              <select id="intensity" name="intensity" required>
+                <option value="軽め">軽め</option>
+                <option value="ふつう" selected>ふつう</option>
+                <option value="高め">高め</option>
+              </select>
+            </label>
+            <label class="full-width">
+              メモ
+              <textarea
+                id="notes"
+                name="notes"
+                rows="4"
+                placeholder="例: 5kmを30分、最後はペースアップ"
+              ></textarea>
+            </label>
+            <div class="form-actions full-width">
+              <button type="submit" class="primary-button">記録を保存</button>
+              <p id="formMessage" class="form-message" aria-live="polite"></p>
+            </div>
+          </form>
+        </section>
+
+        <section class="panel panel-summary">
+          <div class="section-heading">
+            <h2>サマリー</h2>
+            <p>積み上がりをざっくり確認できます。</p>
+          </div>
+
+          <div class="summary-grid">
+            <article class="summary-card accent-coral">
+              <span>記録回数</span>
+              <strong id="totalSessions">0</strong>
+              <small>これまでの合計</small>
+            </article>
+            <article class="summary-card accent-gold">
+              <span>総運動時間</span>
+              <strong id="totalMinutes">0分</strong>
+              <small>全セッション合計</small>
+            </article>
+            <article class="summary-card accent-blue">
+              <span>総消費カロリー</span>
+              <strong id="totalCalories">0kcal</strong>
+              <small>入力分を合算</small>
+            </article>
+            <article class="summary-card accent-ink">
+              <span>最多アクティビティ</span>
+              <strong id="favoriteActivity">-</strong>
+              <small>最も多い種目</small>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel panel-records">
+          <div class="section-heading">
+            <h2>記録一覧</h2>
+            <p>直近の運動ログを確認・整理できます。</p>
+          </div>
+
+          <div class="filters">
+            <label>
+              種目で絞り込み
+              <select id="activityFilter">
+                <option value="all">すべて</option>
+              </select>
+            </label>
+            <label>
+              並び順
+              <select id="sortOrder">
+                <option value="newest">新しい順</option>
+                <option value="oldest">古い順</option>
+                <option value="longest">時間が長い順</option>
+              </select>
+            </label>
+          </div>
+
+          <div id="recordsList" class="records-list" aria-live="polite"></div>
+        </section>
+      </main>
+    </div>
+
+    <template id="recordTemplate">
+      <article class="record-card">
+        <div class="record-main">
+          <div class="record-title-row">
+            <h3 class="record-activity"></h3>
+            <span class="record-intensity"></span>
+          </div>
+          <p class="record-date"></p>
+          <p class="record-notes"></p>
+        </div>
+        <div class="record-stats">
+          <span class="record-duration"></span>
+          <span class="record-calories"></span>
+          <button type="button" class="delete-button">削除</button>
+        </div>
+      </article>
+    </template>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
