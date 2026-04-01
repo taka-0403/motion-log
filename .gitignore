@@ -1,2 +1,4 @@
 .DS_Store
 Thumbs.db
+motion_log.db
+__pycache__/
