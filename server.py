@@ -30,6 +30,7 @@ def init_db() -> None:
             CREATE TABLE IF NOT EXISTS users (
                 id TEXT PRIMARY KEY,
                 username TEXT NOT NULL UNIQUE,
+                email TEXT UNIQUE,
                 password_hash TEXT NOT NULL,
                 salt TEXT NOT NULL,
                 weekly_goal_minutes INTEGER NOT NULL DEFAULT 150,
@@ -71,6 +72,13 @@ def init_db() -> None:
         columns = {
             row["name"] for row in connection.execute("PRAGMA table_info(users)").fetchall()
         }
+        if "email" not in columns:
+            connection.execute(
+                "ALTER TABLE users ADD COLUMN email TEXT"
+            )
+        connection.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email)"
+        )
         if "weekly_goal_minutes" not in columns:
             connection.execute(
                 "ALTER TABLE users ADD COLUMN weekly_goal_minutes INTEGER NOT NULL DEFAULT 150"
@@ -100,7 +108,7 @@ def normalize_username(value: str) -> str:
 
 def fetch_user(connection: sqlite3.Connection, user_id: str):
     return connection.execute(
-        "SELECT id, username, weekly_goal_minutes, created_at FROM users WHERE id = ?",
+        "SELECT id, username, email, weekly_goal_minutes, created_at FROM users WHERE id = ?",
         (user_id,),
     ).fetchone()
 
@@ -109,6 +117,7 @@ def serialize_user(user_row: sqlite3.Row) -> dict:
     return {
         "id": user_row["id"],
         "username": user_row["username"],
+        "email": user_row["email"] if "email" in user_row.keys() else "",
         "weeklyGoalMinutes": user_row["weekly_goal_minutes"],
         "createdAt": user_row["created_at"],
     }
@@ -269,10 +278,11 @@ class MotionLogHandler(SimpleHTTPRequestHandler):
     def handle_register(self):
         payload = self.read_json()
         username = normalize_username(payload.get("username", ""))
+        email = payload.get("email", "").strip().lower()
         password = payload.get("password", "")
 
-        if not username or not password:
-            self.send_json({"error": "ユーザー名とパスワードを入力してください。"}, HTTPStatus.BAD_REQUEST)
+        if not username or not email or not password:
+            self.send_json({"error": "ユーザー名、メールアドレス、パスワードを入力してください。"}, HTTPStatus.BAD_REQUEST)
             return
 
         salt = os.urandom(16)
@@ -282,14 +292,14 @@ class MotionLogHandler(SimpleHTTPRequestHandler):
             with get_connection() as connection:
                 connection.execute(
                     """
-                    INSERT INTO users (id, username, password_hash, salt, created_at)
-                    VALUES (?, ?, ?, ?, ?)
+                    INSERT INTO users (id, username, email, password_hash, salt, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?)
                     """,
-                    (user_id, username, hash_password(password, salt), salt.hex(), now_iso()),
+                    (user_id, username, email, hash_password(password, salt), salt.hex(), now_iso()),
                 )
                 state = fetch_state(connection, user_id)
         except sqlite3.IntegrityError:
-            self.send_json({"error": "そのユーザー名はすでに使われています。"}, HTTPStatus.CONFLICT)
+            self.send_json({"error": "そのユーザー名またはメールアドレスはすでに使われています。"}, HTTPStatus.CONFLICT)
             return
 
         self.send_json(state, HTTPStatus.CREATED)
@@ -297,15 +307,16 @@ class MotionLogHandler(SimpleHTTPRequestHandler):
     def handle_login(self):
         payload = self.read_json()
         username = normalize_username(payload.get("username", ""))
+        email = payload.get("email", "").strip().lower()
         password = payload.get("password", "")
 
         with get_connection() as connection:
             user = connection.execute(
-                "SELECT * FROM users WHERE username = ?",
-                (username,),
+                "SELECT * FROM users WHERE username = ? AND email = ?",
+                (username, email),
             ).fetchone()
             if not user or not verify_password(password, user["salt"], user["password_hash"]):
-                self.send_json({"error": "ユーザー名またはパスワードが違います。"}, HTTPStatus.UNAUTHORIZED)
+                self.send_json({"error": "ユーザー名、メールアドレス、またはパスワードが違います。"}, HTTPStatus.UNAUTHORIZED)
                 return
 
             state = fetch_state(connection, user["id"])

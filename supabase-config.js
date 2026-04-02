@@ -1,0 +1,3 @@
+window.MOTION_LOG_SUPABASE_URL = "https://krqnsaswajqnutidleik.supabase.co";
+window.MOTION_LOG_SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtycW5zYXN3YWpxbnV0aWRsZWlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNTcwNjIsImV4cCI6MjA5MDYzMzA2Mn0.Sizti7PfmYwFCZ_7O0q3vSykpCZV1fENx0RDS_yNyDg";

@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Motion Log</title>
+    <title>motion-log</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=20260402-1" />
   </head>
   <body>
     <div id="loadingOverlay" class="loading-overlay hidden" aria-live="polite" aria-busy="true">
@@ -19,13 +19,14 @@
         <p id="loadingText">読み込み中...</p>
       </div>
     </div>
+
     <div class="page-shell">
       <section id="authScreen" class="auth-screen">
         <div class="auth-intro">
           <p class="eyebrow">Workout Tracker</p>
-          <h1>自分専用の運動記録を、毎日かんたんに。</h1>
+          <h1>motion-log</h1>
           <p class="auth-text">
-            ユーザー名とパスワードでログインして、運動の種類・時間・強度から消費カロリーを自動で記録できます。
+            アカウントごとに運動の記録を残して、1週間の目標やフレンドの活動をまとめて確認できます。
           </p>
         </div>
 
@@ -33,12 +34,16 @@
           <article class="panel auth-card">
             <div class="section-heading">
               <h2>ログイン</h2>
-              <p>登録済みのアカウントで記録を続けられます。</p>
+              <p>登録済みのユーザー名とパスワードでログインします。</p>
             </div>
             <form id="loginForm" class="stack-form">
               <label>
                 ユーザー名
                 <input type="text" name="username" autocomplete="username" required />
+              </label>
+              <label>
+                メールアドレス
+                <input type="email" name="email" autocomplete="email" required />
               </label>
               <label>
                 パスワード
@@ -52,12 +57,16 @@
           <article class="panel auth-card">
             <div class="section-heading">
               <h2>新規登録</h2>
-              <p>ユーザー名とパスワードだけで始められます。</p>
+              <p>ユーザー名とパスワードだけで新しくアカウントを作成できます。</p>
             </div>
             <form id="registerForm" class="stack-form">
               <label>
                 ユーザー名
                 <input type="text" name="username" maxlength="24" pattern="[a-zA-Z0-9_-]+" required />
+              </label>
+              <label>
+                メールアドレス
+                <input type="email" name="email" autocomplete="email" required />
               </label>
               <label>
                 パスワード
@@ -102,7 +111,7 @@
             <section id="recordSection" class="panel panel-form">
               <div class="section-heading">
                 <h2>運動を記録</h2>
-                <p>運動の種類、時間、強度から消費カロリーを自動計算します。</p>
+                <p>日付、種類、時間、強度から消費カロリーを自動計算して記録します。</p>
               </div>
 
               <form id="workoutForm" class="workout-form">
@@ -114,21 +123,17 @@
                   運動の種類
                   <select id="activity" name="activity" required>
                     <option value="">選択してください</option>
-                    <option value="ランニング">ランニング</option>
-                    <option value="ウォーキング">ウォーキング</option>
-                    <option value="筋トレ">筋トレ</option>
-                    <option value="ヨガ">ヨガ</option>
-                    <option value="サイクリング">サイクリング</option>
-                    <option value="水泳">水泳</option>
                   </select>
                 </label>
-                <div class="activity-adder">
+
+                <div class="activity-adder full-width">
                   <label>
                     運動の種類を追加
                     <input type="text" id="customActivityInput" placeholder="例: ダンス" />
                   </label>
                   <button type="button" id="addActivityButton" class="secondary-button add-activity-button">追加</button>
                 </div>
+
                 <label>
                   時間（分）
                   <input type="number" id="duration" name="duration" min="1" max="600" placeholder="45" required />
@@ -136,9 +141,9 @@
                 <label>
                   強度
                   <select id="intensity" name="intensity" required>
-                    <option value="低">低</option>
+                    <option value="弱">弱</option>
                     <option value="中" selected>中</option>
-                    <option value="高">高</option>
+                    <option value="強">強</option>
                   </select>
                 </label>
                 <label class="full-width">
@@ -147,7 +152,7 @@
                 </label>
                 <label class="full-width">
                   メモ
-                  <textarea id="notes" name="notes" rows="4" placeholder="例: 3km走って最後は流しを追加"></textarea>
+                  <textarea id="notes" name="notes" rows="4" placeholder="例: 3km走って最後にストレッチ"></textarea>
                 </label>
                 <div class="form-actions full-width">
                   <button type="submit" class="primary-button">記録を保存</button>
@@ -176,14 +181,14 @@
                     <span>達成</span>
                   </div>
                 </div>
-                <strong id="heroWeeklyMinutes">0分</strong>
-                <span id="heroUserLabel">今週の運動時間を集計中</span>
+                <strong id="heroWeeklyMinutes">0 / 150分</strong>
+                <span id="heroUserLabel">直近7日の運動時間</span>
                 <form id="goalForm" class="goal-form">
                   <label>
                     目標時間（分）
                     <input type="number" id="weeklyGoalInput" min="1" step="1" placeholder="150" required />
                   </label>
-                  <button type="submit" class="secondary-button">目標を設定</button>
+                  <button type="submit" class="secondary-button">目標を更新</button>
                 </form>
                 <p id="goalMessage" class="form-message" aria-live="polite"></p>
               </article>
@@ -191,7 +196,7 @@
               <article class="panel panel-summary">
                 <div class="section-heading">
                   <h2>サマリー</h2>
-                  <p>これまでの記録をまとめて確認できます。</p>
+                  <p>ここまでの記録をまとめて確認できます。</p>
                 </div>
                 <div class="summary-grid">
                   <article class="summary-card accent-coral">
@@ -200,19 +205,19 @@
                     <small>全ワークアウト</small>
                   </article>
                   <article class="summary-card accent-gold">
-                    <span>総運動時間</span>
+                    <span>合計時間</span>
                     <strong id="totalMinutes">0分</strong>
-                    <small>累計時間</small>
+                    <small>累計運動時間</small>
                   </article>
                   <article class="summary-card accent-blue">
-                    <span>総消費カロリー</span>
+                    <span>消費カロリー</span>
                     <strong id="totalCalories">0kcal</strong>
                     <small>自動計算の合計</small>
                   </article>
                   <article class="summary-card accent-ink">
-                    <span>最多アクティビティ</span>
+                    <span>最頻アクティビティ</span>
                     <strong id="favoriteActivity">-</strong>
-                    <small>最も多い運動</small>
+                    <small>もっとも多い運動</small>
                   </article>
                 </div>
               </article>
@@ -223,9 +228,10 @@
         <section id="historyView" class="app-view hidden">
           <section id="historySection" class="panel panel-feed">
             <div class="section-heading">
-              <h2>過去の記録画面</h2>
-              <p>自分の記録を新しい順で確認できます。</p>
+              <h2>過去の記録</h2>
+              <p>表示中の月に合わせて、行った運動を時系列で確認できます。</p>
             </div>
+
             <section class="history-calendar">
               <div class="calendar-toolbar">
                 <button id="calendarPrev" type="button" class="ghost-button">前の月</button>
@@ -243,10 +249,11 @@
               </div>
               <div id="calendarGrid" class="calendar-grid" aria-label="記録カレンダー"></div>
               <div class="calendar-selection">
-                <span id="calendarSelectionLabel">日付指定なし</span>
+                <span id="calendarSelectionLabel">日付選択なし</span>
                 <button id="calendarClear" type="button" class="ghost-button hidden">日付選択を解除</button>
               </div>
             </section>
+
             <div class="history-toolbar">
               <label>
                 運動の種類で検索
@@ -255,6 +262,7 @@
                 </select>
               </label>
             </div>
+
             <div id="recordsList" class="records-list" aria-live="polite"></div>
           </section>
         </section>
@@ -264,7 +272,7 @@
             <section class="panel panel-friends">
               <div class="section-heading">
                 <h2>フレンド画面</h2>
-                <p>ユーザー名でフレンド追加して、状況を確認できます。</p>
+                <p>ユーザー名でフレンドを追加して、相手の記録や目標達成度を確認できます。</p>
               </div>
 
               <form id="friendRequestForm" class="inline-form">
@@ -291,7 +299,7 @@
             <section class="panel panel-feed">
               <div class="section-heading">
                 <h2>フレンドの記録</h2>
-                <p>一覧から選んだフレンドの記録を確認できます。</p>
+                <p>フレンド一覧から選んだ相手の運動記録を確認できます。</p>
               </div>
               <p id="friendRecordsHeading" class="friend-records-heading">フレンドを選択してください。</p>
               <div id="friendGoalSummary" class="friend-goal-summary hidden"></div>
@@ -330,6 +338,8 @@
       </article>
     </template>
 
-    <script src="./app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-config.js?v=20260402-1"></script>
+    <script src="./app.js?v=20260402-1"></script>
   </body>
 </html>
